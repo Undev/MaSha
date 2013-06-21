@@ -332,6 +332,12 @@ MaSha.prototype = {
         for (key in this.ranges) { 
             hashAr.push(this.ranges[key]);
         }
+
+        var oldid = $('input[name="revision-id"]').val();
+        if (typeof oldid !== undefined) {
+            history.pushState(null, null, '?oldid=' + oldid);
+        }
+
         var new_hash = '#sel='+hashAr.join(';');
         this.last_hash = new_hash;
         this.options.location.set_hash(new_hash);
@@ -384,6 +390,28 @@ MaSha.prototype = {
         // XXX this if is ugly
         if(parseInt(bits1[0], 10) < parseInt(bits2[0], 10) ||
            (bits1[0] == bits2[0] && parseInt(bits1[1], 10) <= parseInt(bits2[1], 10))){
+            var QueryString = function () {
+                var query_string = {};
+                var query = window.location.search.substring(1);
+                var vars = query.split("&");
+                for (var i=0;i<vars.length;i++) {
+                    var pair = vars[i].split("=");
+                    if (typeof query_string[pair[0]] === "undefined") {
+                        query_string[pair[0]] = pair[1];
+                    } else if (typeof query_string[pair[0]] === "string") {
+                        var arr = [ query_string[pair[0]], pair[1] ];
+                        query_string[pair[0]] = arr;
+                    } else {
+                        query_string[pair[0]].push(pair[1]);
+                    }
+                }
+                return query_string;
+            } ();
+
+            if (QueryString.hasOwnProperty('oldid')) {
+                bits1[0] = parseInt(bits1[0], 10) + 2;
+                bits2[0] = parseInt(bits2[0], 10) + 2;
+            }
 
             var start = this.deserializePosition(bits1, 'start'),
                 end = this.deserializePosition(bits2, 'end');
